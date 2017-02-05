@@ -20,6 +20,7 @@ public class CommandRouter
     private HashMap<String, List<String>> redirects = new HashMap();
     private HashMap<String, String> replacements = new HashMap<>();
 
+    
     public void onDisable()
     {
         Logger log = Logger.getLogger("Minecraft");
