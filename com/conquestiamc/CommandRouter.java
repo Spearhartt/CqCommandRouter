@@ -1,5 +1,9 @@
 package com.conquestiamc;
 
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,10 +21,10 @@ public class CommandRouter
         extends JavaPlugin
         implements Listener
 {
-    private HashMap<String, List<String>> redirects = new HashMap();
+    private HashMap<String, String> redirects = new HashMap();
     private HashMap<String, String> replacements = new HashMap<>();
 
-    
+
     public void onDisable()
     {
         Logger log = Logger.getLogger("Minecraft");
@@ -29,6 +33,7 @@ public class CommandRouter
 
     public void onEnable()
     {
+        this.getCommand("cqcr").setExecutor(new ReloadCommand());
         getServer().getPluginManager().registerEvents(this, this);
         File file = new File(getDataFolder(), "config.yml");
         if (!file.exists()) {
@@ -46,7 +51,7 @@ public class CommandRouter
             //Iterate through the commands in the config
             for (String command : config.getConfigurationSection("commands").getKeys(false)) {
                 //Put the commmand in the hashmap as the Key with the commands it redirects to as the value
-                this.redirects.put(command, config.getStringList("commands." + command));
+                this.redirects.put(command, config.getString("commands." + command));
             }
         }
 
@@ -65,10 +70,10 @@ public class CommandRouter
         String command = event.getMessage().substring(1); //Remove the "/" before the command
         Player player = event.getPlayer();
         String[] brokenCommand = command.split(" ");
+
         if (this.redirects.containsKey(command)) {
-            for (String string : redirects.get(command)) {
-                player.performCommand(string);
-            }
+            player.performCommand(redirects.get(command));
+            getLogger().info(player.getName() + ": /" + redirects.get(command));
             event.setCancelled(true);
         } else if (brokenCommand[0] != null && this.replacements.containsKey(brokenCommand[0])) {
             String newCommand = this.replacements.get(brokenCommand[0]);
@@ -76,8 +81,26 @@ public class CommandRouter
                 newCommand = newCommand + " " + brokenCommand[i];
             }
             player.performCommand(newCommand);
+            getLogger().info(player.getName() + ": /" + newCommand);
             event.setCancelled(true);
         }
 
+    }
+
+    public class ReloadCommand implements CommandExecutor {
+        @Override
+        public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+            if (args.length != 0 && args[0].equalsIgnoreCase("reload")) {
+                reloadConfig();
+                getCommandRedirects();
+                getLogger().info("[CommandRouter] reloaded configs");
+
+                if (commandSender instanceof Player) {
+                    commandSender.sendMessage(ChatColor.AQUA + "[CommandRouter]" + ChatColor.GRAY + " reloaded configs");
+                }
+                return true;
+            }
+            return false;
+        }
     }
 }

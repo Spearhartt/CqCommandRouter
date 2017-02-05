@@ -2,3 +2,7 @@ author: Spearhartt
 main: com.conquestiamc.CommandRouter
 name: CqCommandRouter
 version: '0.1'
+commands:
+  cqcr:
+    description: Reloads configs
+    usage: /cqcr reload
