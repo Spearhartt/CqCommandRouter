@@ -1,0 +1,6 @@
+commands:
+    home: 'skill recall'
+    sethome: 'skill mark'
+    spawn: 'skill port spawn'
+replacements:
+    warp: 'bw'
